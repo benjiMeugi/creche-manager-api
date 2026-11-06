@@ -1,0 +1,675 @@
+{
+  "info": {
+    "_postman_id": "c7b8e110-9f4a-4d3b-8c12-petitelune2026",
+    "name": "Creche Manager API - Petite Lune",
+    "description": "Collection Postman officielle de l'API métier `creche-manager-api` (Crèche Petite Lune - De 3 mois à 4 ans).\n\nArchitecture alignée sur `authentication-api` et `employe-api` (`benjimeugi/laravel-api-requests-parsers`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_api_url",
+      "value": "http://localhost:8001/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "votre_token_bearer_ici",
+      "type": "string"
+    },
+    {
+      "key": "child_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "registration_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "attendance_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "installment_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "charge_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "attachment_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth & Permissions (authentication-api)",
+      "item": [
+        {
+          "name": "1. Login sur authentication-api (Récupère le token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.body && jsonData.body.response_data && jsonData.body.response_data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.body.response_data.token);",
+                  "} else if (jsonData && jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{auth_api_url}}/login",
+              "host": ["{{auth_api_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "2. Mes Permissions sur creche-manager-api",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["permissions"]
+            }
+          }
+        },
+        {
+          "name": "3. Profil employé connecté (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": ["{{base_url}}"],
+              "path": ["me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Sections & Grille Tarifaire (Section VIII PDF)",
+      "item": [
+        {
+          "name": "Lister toutes les sections (3-12m, 1-2a, 2-3a, 3-4a)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/section",
+              "host": ["{{base_url}}"],
+              "path": ["section"]
+            }
+          }
+        },
+        {
+          "name": "Filtrer une section avec query_ (BenjiMeugi Parser)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/section?query_={\"where\":{\"code\":\"3-12_months\"},\"withCount\":[\"children\"]}",
+              "host": ["{{base_url}}"],
+              "path": ["section"],
+              "query": [
+                {
+                  "key": "query_",
+                  "value": "{\"where\":{\"code\":\"3-12_months\"},\"withCount\":[\"children\"]}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Détail d'une section",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/section/1",
+              "host": ["{{base_url}}"],
+              "path": ["section", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Enfants & Inscription Complète Imbriquée",
+      "item": [
+        {
+          "name": "Inscription Complète en 1 Appel (Enfant + Parents + Médical + Dossier)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Koffi\",\n  \"last_name\": \"Mensah\",\n  \"birth_date\": \"2026-03-15\",\n  \"gender\": \"M\",\n  \"birth_place\": \"Lomé\",\n  \"home_languages\": \"Français, Éwé\",\n  \"dietary_habits\": \"Lait maternisé 210ml + compote de pommes\",\n  \"sleep_habits\": \"Sieste de 10h à 11h et de 13h30 à 15h00 avec doudou\",\n  \"other_useful_info\": \"Enfant très curieux et souriant\",\n  \"guardians\": [\n    {\n      \"role\": \"father\",\n      \"full_name\": \"Kodjo Mensah\",\n      \"relationship_detail\": \"Père\",\n      \"profession\": \"Ingénieur Génie Civil\",\n      \"phone\": \"+22890001122\",\n      \"email\": \"kodjo.mensah@example.com\",\n      \"address\": \"Tokoin Hôpital, Lomé\",\n      \"is_emergency_contact\": false,\n      \"is_authorized_pickup\": true\n    },\n    {\n      \"role\": \"mother\",\n      \"full_name\": \"Afi Mensah\",\n      \"relationship_detail\": \"Mère\",\n      \"profession\": \"Pharmacienne\",\n      \"phone\": \"+22891003344\",\n      \"email\": \"afi.mensah@example.com\",\n      \"address\": \"Tokoin Hôpital, Lomé\",\n      \"is_emergency_contact\": true,\n      \"is_authorized_pickup\": true\n    },\n    {\n      \"role\": \"emergency_contact\",\n      \"full_name\": \"Yao Mensah\",\n      \"relationship_detail\": \"Oncle paternel\",\n      \"profession\": \"Enseignant\",\n      \"phone\": \"+22892005566\",\n      \"address\": \"Bè-Kpota, Lomé\",\n      \"is_emergency_contact\": true,\n      \"is_authorized_pickup\": true\n    }\n  ],\n  \"medicalProfile\": {\n    \"doctor_name_contact\": \"Dr. Agbeko (+228 90 11 22 33)\",\n    \"vaccines_up_to_date\": true,\n    \"has_allergies\": false,\n    \"allergies_details\": null,\n    \"medical_conditions\": \"Aucune maladie particulière\",\n    \"has_ongoing_treatment\": false,\n    \"ongoing_treatment_details\": null,\n    \"blood_group\": \"O+\"\n  },\n  \"registrations\": [\n    {\n      \"academic_year\": \"2026-2027\",\n      \"consent_first_aid\": true,\n      \"consent_photos_videos\": true,\n      \"consent_emergency_pickup\": true,\n      \"subscribe_daily_meal\": true,\n      \"subscribe_aftercare\": false,\n      \"subscribe_weekly_package\": false,\n      \"declarant_name\": \"Kodjo Mensah\",\n      \"signed_at_place\": \"Lomé\",\n      \"signed_date\": \"2026-11-06\",\n      \"rules_accepted\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child",
+              "host": ["{{base_url}}"],
+              "path": ["child"]
+            }
+          }
+        },
+        {
+          "name": "Lister les enfants (avec relations via query_)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/child?query_={\"with\":[\"section\",\"guardians\",\"medicalProfile\",\"registrations\"]}",
+              "host": ["{{base_url}}"],
+              "path": ["child"],
+              "query": [
+                {
+                  "key": "query_",
+                  "value": "{\"with\":[\"section\",\"guardians\",\"medicalProfile\",\"registrations\"]}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Consulter le Dossier Complet Consolidé d'un enfant",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/child/{{child_id}}/dossier",
+              "host": ["{{base_url}}"],
+              "path": ["child", "{{child_id}}", "dossier"]
+            }
+          }
+        },
+        {
+          "name": "Consulter la Timeline (Suivi Différé Parent : Événements + Pointages + Fournitures)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/child/{{child_id}}/timeline?parent_view=1",
+              "host": ["{{base_url}}"],
+              "path": ["child", "{{child_id}}", "timeline"],
+              "query": [
+                { "key": "parent_view", "value": "1" },
+                { "key": "date", "value": "2026-11-06", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour les habitudes d'un enfant",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dietary_habits\": \"Passage à la diversification complète + biberon 240ml le matin\",\n  \"other_useful_info\": \"Commence à marcher à quatre pattes\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child/{{child_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["child", "{{child_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Parents, Tuteurs & Contacts d'Urgence (Sections II & III PDF)",
+      "item": [
+        {
+          "name": "Lister les responsables légaux d'un enfant",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/guardian?query_={\"where\":{\"child_id\":1}}",
+              "host": ["{{base_url}}"],
+              "path": ["guardian"],
+              "query": [
+                { "key": "query_", "value": "{\"where\":{\"child_id\":1}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ajouter un Tuteur légal ou Contact d'urgence",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"role\": \"legal_guardian\",\n  \"full_name\": \"Ama Mensah\",\n  \"relationship_detail\": \"Grand-mère\",\n  \"profession\": \"Retraitée\",\n  \"phone\": \"+22893112233\",\n  \"address\": \"Agoè, Lomé\",\n  \"is_emergency_contact\": true,\n  \"is_authorized_pickup\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/guardian",
+              "host": ["{{base_url}}"],
+              "path": ["guardian"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Dossiers Médicaux (Section IV PDF)",
+      "item": [
+        {
+          "name": "Voir la fiche médicale d'un enfant",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/child_medical_profile?query_={\"where\":{\"child_id\":1}}",
+              "host": ["{{base_url}}"],
+              "path": ["child_medical_profile"],
+              "query": [
+                { "key": "query_", "value": "{\"where\":{\"child_id\":1}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour les allergies / traitements d'un enfant",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vaccines_up_to_date\": true,\n  \"has_allergies\": true,\n  \"allergies_details\": \"Légère intolérance au lactose signalée par le pédiatre\",\n  \"has_ongoing_treatment\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child_medical_profile/1",
+              "host": ["{{base_url}}"],
+              "path": ["child_medical_profile", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Dossiers d'Inscription & Validation Admin (Section XI PDF)",
+      "item": [
+        {
+          "name": "Lister les dossiers d'inscription avec l'enfant et les pièces",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/registration?query_={\"with\":[\"child\",\"section\",\"attachments\",\"tuitionInstallments\"]}",
+              "host": ["{{base_url}}"],
+              "path": ["registration"],
+              "query": [
+                {
+                  "key": "query_",
+                  "value": "{\"with\":[\"child\",\"section\",\"attachments\",\"tuitionInstallments\"]}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approuver un Dossier d'Inscription (Active l'enfant & génère les 4 tranches)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"section_id\": 1,\n  \"admission_date\": \"2026-11-10\",\n  \"admin_observations\": \"Acte de naissance, carnet de vaccination et certificat médical vérifiés.\",\n  \"decision_comment\": \"Admission validée par la Direction.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registration/{{registration_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["registration", "{{registration_id}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Rejeter un Dossier d'Inscription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision_comment\": \"Dossier incomplet : certificat médical d'aptitude manquant.\",\n  \"admin_observations\": \"En attente du certificat médical.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registration/{{registration_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["registration", "{{registration_id}}", "reject"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Pièces à Joindre (Section VII PDF)",
+      "item": [
+        {
+          "name": "Uploader une pièce justificative sur une inscription (Acte de naissance, Vaccins...)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/Users/benjliksoft/Documents/bendev/laravel/petite-lune/public/documents/fiche-inscription-petite-lune.pdf",
+                  "description": "Fichier PDF ou Image (max 10 Mo)"
+                },
+                {
+                  "key": "document_type",
+                  "value": "birth_certificate",
+                  "type": "text",
+                  "description": "Valeurs : birth_certificate | vaccination_record | medical_certificate | id_photo"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/attachment/registration/{{registration_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["attachment", "registration", "{{registration_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Télécharger une pièce jointe",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/attachment/{{attachment_id}}/download",
+              "host": ["{{base_url}}"],
+              "path": ["attachment", "{{attachment_id}}", "download"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Pointages & Horaires 07h30-18h30 (Section IX PDF)",
+      "item": [
+        {
+          "name": "1. Pointer l'Arrivée d'un enfant (Check-In)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"attendance_date\": \"2026-11-06\",\n  \"check_in_time\": \"07:45\",\n  \"dropped_off_by\": \"Clarisse Kouassi (Mère)\",\n  \"notes\": \"Arrivée en pleine forme\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/attendance/check_in",
+              "host": ["{{base_url}}"],
+              "path": ["attendance", "check_in"]
+            }
+          }
+        },
+        {
+          "name": "2. Pointer le Départ d'un enfant (Check-Out avec calcul dépassement > 18h30)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"check_out_time\": \"19:20\",\n  \"picked_up_by\": \"Marc Kouassi (Père)\",\n  \"notes\": \"Retard signalé par téléphone (embouteillage)\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/attendance/{{attendance_id}}/check_out",
+              "host": ["{{base_url}}"],
+              "path": ["attendance", "{{attendance_id}}", "check_out"]
+            }
+          }
+        },
+        {
+          "name": "Lister les feuilles de présence",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/attendance?query_={\"with\":[\"child\"]}",
+              "host": ["{{base_url}}"],
+              "path": ["attendance"],
+              "query": [
+                { "key": "query_", "value": "{\"with\":[\"child\"]}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Journal d'Événements du Séjour (Timeline Parent)",
+      "item": [
+        {
+          "name": "Ajouter un événement Repas / Biberon",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"event_type\": \"meal\",\n  \"severity\": \"info\",\n  \"title\": \"Déjeuner de midi\",\n  \"description\": \"A mangé toute sa purée de légumes et bu 180 ml de lait.\",\n  \"event_date\": \"2026-11-06\",\n  \"event_time\": \"12:15\",\n  \"metadata\": {\n    \"meal_type\": \"lunch\",\n    \"appetite\": \"all\",\n    \"bottle_ml\": 180\n  },\n  \"is_shared_with_parent\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child_event",
+              "host": ["{{base_url}}"],
+              "path": ["child_event"]
+            }
+          }
+        },
+        {
+          "name": "Ajouter un événement Sieste (Sommeil)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"event_type\": \"nap\",\n  \"severity\": \"info\",\n  \"title\": \"Sieste de l'après-midi\",\n  \"description\": \"Sommeil calme et réparateur de 13h15 à 15h00.\",\n  \"event_date\": \"2026-11-06\",\n  \"event_time\": \"15:00\",\n  \"metadata\": {\n    \"start_time\": \"13:15\",\n    \"end_time\": \"15:00\",\n    \"duration_minutes\": 105\n  },\n  \"is_shared_with_parent\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child_event",
+              "host": ["{{base_url}}"],
+              "path": ["child_event"]
+            }
+          }
+        },
+        {
+          "name": "Ajouter une Demande de Réapprovisionnement (Couches / Lingettes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"event_type\": \"supply_request\",\n  \"severity\": \"attention\",\n  \"title\": \"Besoin de couches et lingettes\",\n  \"description\": \"Il ne reste que 2 couches dans le casier d'Amina. Merci de prévoir un paquet demain matin.\",\n  \"event_date\": \"2026-11-06\",\n  \"event_time\": \"16:30\",\n  \"metadata\": {\n    \"items\": [\"diapers\", \"wipes\"],\n    \"supply_status\": \"requested\"\n  },\n  \"is_shared_with_parent\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/child_event",
+              "host": ["{{base_url}}"],
+              "path": ["child_event"]
+            }
+          }
+        },
+        {
+          "name": "Marquer les fournitures comme apportées par le parent",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/child_event/{{event_id}}/fulfill_supply",
+              "host": ["{{base_url}}"],
+              "path": ["child_event", "{{event_id}}", "fulfill_supply"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Échéancier de Scolarité (4 Tranches - Section VIII PDF)",
+      "item": [
+        {
+          "name": "Lister l'échéancier des tranches d'une inscription",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/tuition_installment?query_={\"where\":{\"registration_id\":1}}",
+              "host": ["{{base_url}}"],
+              "path": ["tuition_installment"],
+              "query": [
+                { "key": "query_", "value": "{\"where\":{\"registration_id\":1}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Enregistrer le Paiement d'une Tranche (Génère reçu REC-2026-XXXX)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_paid\": 450000,\n  \"payment_method\": \"bank_transfer\",\n  \"notes\": \"Règlement 1ère tranche par virement bancaire\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tuition_installment/{{installment_id}}/pay",
+              "host": ["{{base_url}}"],
+              "path": ["tuition_installment", "{{installment_id}}", "pay"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Services Optionnels (Repas 1500 FCFA, Garderie 2000 FCFA/h)",
+      "item": [
+        {
+          "name": "Facturer un Repas journalier (1 500 FCFA) ou Forfait semaine",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": 1,\n  \"registration_id\": 1,\n  \"charge_type\": \"daily_meal\",\n  \"charge_date\": \"2026-11-06\",\n  \"quantity\": 5,\n  \"unit_price\": 1500,\n  \"notes\": \"Cantine semaine du 02 au 06 Novembre\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/additional_charge",
+              "host": ["{{base_url}}"],
+              "path": ["additional_charge"]
+            }
+          }
+        },
+        {
+          "name": "Régler un Frais Optionnel",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_method\": \"cash\",\n  \"notes\": \"Payé à l'accueil\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/additional_charge/{{charge_id}}/pay",
+              "host": ["{{base_url}}"],
+              "path": ["additional_charge", "{{charge_id}}", "pay"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

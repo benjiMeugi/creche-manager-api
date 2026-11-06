@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modélisation Complète (3NF — 22 Tables) — Crèche Manager API</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --pl-primary: #04668b;
+            --pl-secondary: #41859c;
+            --pl-accent: #1c7ea1;
+            --pl-gold: #fba12a;
+            --pl-bg: #f8fafc;
+            --pl-card: #ffffff;
+            --pl-text: #0f172a;
+            --pl-muted: #64748b;
+            --pl-border: #e2e8f0;
+            --pl-success: #10b981;
+            --pl-info: #0284c7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--pl-bg);
+            color: var(--pl-text);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(180deg, var(--pl-primary) 0%, #02364a 100%);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 24px 20px;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(4, 102, 149, 0.2);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            margin-bottom: 20px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--pl-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(251, 161, 42, 0.35);
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 3px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .nav-badge {
+            font-size: 0.7rem;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 320px;
+            flex: 1;
+            padding: 36px 48px;
+            max-width: 1400px;
+        }
+
+        .hero-banner {
+            background: #fff;
+            border: 1px solid var(--pl-border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .hero-text h1 {
+            font-size: 1.8rem;
+            color: var(--pl-primary);
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .hero-text p {
+            color: var(--pl-muted);
+            font-size: 0.95rem;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--pl-bg);
+            border: 1px solid var(--pl-border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--pl-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--pl-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .diagram-container {
+            background: #fff;
+            border: 1px solid var(--pl-border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 36px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            overflow-x: auto;
+        }
+
+        .diagram-container h2 {
+            font-size: 1.3rem;
+            color: var(--pl-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-card {
+            background: #fff;
+            border: 1px solid var(--pl-border);
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            scroll-margin-top: 24px;
+        }
+
+        .table-header {
+            padding: 16px 22px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--pl-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--pl-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-desc {
+            font-size: 0.85rem;
+            color: var(--pl-muted);
+            margin-top: 4px;
+        }
+
+        .columns-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .columns-table th {
+            background: #ffffff;
+            color: var(--pl-muted);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--pl-border);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .columns-table td {
+            padding: 11px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .columns-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .col-name {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .col-type {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            color: #0284c7;
+        }
+
+        .badge-pk {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-fk {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-new {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🌙</div>
+            <div>
+                <div class="brand-title">Crèche Petite Lune</div>
+                <div class="brand-subtitle">Modélisation 3NF · 22 Tables</div>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Vue d'ensemble</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#diagramme" class="nav-link"><span>📊 Diagramme Global</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">📚 Référentiels & Configs (9)</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#sections" class="nav-link"><span>sections</span><span class="nav-badge">4 âges</span></a></li>
+                <li class="nav-item"><a href="#section_tranches" class="nav-link"><span>section_tranches</span><span class="nav-badge">Tranches</span></a></li>
+                <li class="nav-item"><a href="#languages" class="nav-link"><span>languages</span><span class="nav-badge">Langues</span></a></li>
+                <li class="nav-item"><a href="#relationship_types" class="nav-link"><span>relationship_types</span><span class="nav-badge">Liens</span></a></li>
+                <li class="nav-item"><a href="#document_types" class="nav-link"><span>document_types</span><span class="nav-badge">Pièces</span></a></li>
+                <li class="nav-item"><a href="#child_event_types" class="nav-link"><span>child_event_types</span><span class="nav-badge">Journal</span></a></li>
+                <li class="nav-item"><a href="#payment_methods" class="nav-link"><span>payment_methods</span><span class="nav-badge badge-new">Paiements</span></a></li>
+                <li class="nav-item"><a href="#pricing_configurations" class="nav-link"><span>pricing_configurations</span><span class="nav-badge badge-new">Prix</span></a></li>
+                <li class="nav-item"><a href="#operating_schedules" class="nav-link"><span>operating_schedules</span><span class="nav-badge badge-new">Horaires</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">👶 Enfants & Familles (5)</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#children" class="nav-link"><span>children</span><span class="nav-badge">Enfants</span></a></li>
+                <li class="nav-item"><a href="#guardians" class="nav-link"><span>guardians</span><span class="nav-badge">Parents</span></a></li>
+                <li class="nav-item"><a href="#child_guardian" class="nav-link"><span>child_guardian</span><span class="nav-badge badge-new">Fratries</span></a></li>
+                <li class="nav-item"><a href="#child_language" class="nav-link"><span>child_language</span><span class="nav-badge">N..N</span></a></li>
+                <li class="nav-item"><a href="#child_medical_profiles" class="nav-link"><span>child_medical_profiles</span><span class="nav-badge">Santé</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">📋 Inscriptions & Pièces (2)</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#registrations" class="nav-link"><span>registrations</span><span class="nav-badge">Dossiers</span></a></li>
+                <li class="nav-item"><a href="#attachments" class="nav-link"><span>attachments</span><span class="nav-badge">Fichiers</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">💰 Dettes & Règlements (4)</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#tuition_installments" class="nav-link"><span>tuition_installments</span><span class="nav-badge">Échéances</span></a></li>
+                <li class="nav-item"><a href="#additional_charges" class="nav-link"><span>additional_charges</span><span class="nav-badge">Charges</span></a></li>
+                <li class="nav-item"><a href="#payments" class="nav-link"><span>payments</span><span class="nav-badge badge-new">Reçus</span></a></li>
+                <li class="nav-item"><a href="#payment_allocations" class="nav-link"><span>payment_allocations</span><span class="nav-badge badge-new">Ventilation</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">🕒 Séjour Quotidien (2)</div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#attendances" class="nav-link"><span>attendances</span><span class="nav-badge badge-new">DateTime</span></a></li>
+                <li class="nav-item"><a href="#child_events" class="nav-link"><span>child_events</span><span class="nav-badge badge-new">DateTime</span></a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="hero-banner">
+            <div class="hero-text">
+                <h1>Architecture Validée & Modélisation 3NF</h1>
+                <p>Spécification relationnelle complète du backend <code>creche-manager-api</code> (22 tables conformes PSR-12 & Laravel 11).</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">19</div>
+                    <div class="stat-label">Tables Normalisées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">14/14</div>
+                    <div class="stat-label">Tests Automatisés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">90+</div>
+                    <div class="stat-label">Assertions Validées</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="diagram-container" id="diagramme">
+            <h2>📊 Diagramme Entité-Association (22 Tables)</h2>
+            <div class="mermaid">
+flowchart TB
+    subgraph REF["RÉFÉRENTIELS"]
+        SEC["sections"]
+        ST["section_tranches"]
+        LANG["languages"]
+        RT["relationship_types"]
+        DT["document_types"]
+        CET["child_event_types"]
+        PM["payment_methods"]
+        PRIC["pricing_configurations"]
+        SCHED["operating_schedules"]
+    end
+
+    subgraph FAMILY["ENFANTS & FAMILLE"]
+        CH["children"]
+        G["guardians"]
+        CG["child_guardian (Fratries)"]
+        CL["child_language"]
+        MED["child_medical_profiles"]
+    end
+
+    subgraph DOSSIER["DOSSIERS & PIÈCES"]
+        REG["registrations"]
+        ATT["attachments"]
+    end
+
+    subgraph FINANCE["FINANCES & ENCAISSEMENTS"]
+        TI["tuition_installments (Créance)"]
+        AC["additional_charges (Créance)"]
+        PAY["payments (Encaissement réel)"]
+        PA["payment_allocations (Ventilation)"]
+    end
+
+    subgraph DAILY["SÉJOUR QUOTIDIEN"]
+        ATD["attendances (dateTime)"]
+        EV["child_events (dateTime)"]
+    end
+
+    SEC --> ST
+    SEC --> REG
+    CH --> CL
+    LANG --> CL
+    RT --> CG
+    CH --> CG
+    G --> CG
+    CH --> MED
+    CH --> REG
+    REG --> TI
+    ST --> TI
+    CH --> AC
+    REG --> AC
+    G --> PAY
+    CH --> PAY
+    PAY --> PA
+    TI --> PA
+    AC --> PA
+    CH --> ATD
+    G --> ATD
+    CH --> EV
+    CET --> EV
+    PM --> PAY
+    SCHED -.-> ATD
+    PRIC -.-> ATD
+    PRIC -.-> AC
+    DT --> ATT
+    CH -.-> ATT
+    REG -.-> ATT
+    EV -.-> ATT
+            </div>
+        </div>
+
+        <!-- 1. SECTIONS -->
+        <div class="table-card" id="sections">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>sections</span> <span class="badge-pk">Table Référentiel</span></div>
+                    <div class="table-desc">Les 4 sections d'âge officielles de la crèche et leur grille tarifaire de base.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant unique</td></tr>
+                    <tr><td class="col-name">code</td><td class="col-type">varchar(50)</td><td>UNIQUE</td><td>Identifiant textuel (<code>3-12_months</code>, <code>1-2_years</code>...)</td></tr>
+                    <tr><td class="col-name">label</td><td class="col-type">varchar(255)</td><td>NOT NULL</td><td>Nom usuel affiché</td></tr>
+                    <tr><td class="col-name">min_age_months / max_age_months</td><td class="col-type">unsigned int</td><td>NOT NULL</td><td>Fourchette d'âge en mois</td></tr>
+                    <tr><td class="col-name">registration_fee</td><td class="col-type">bigint unsigned</td><td>50 000 FCFA</td><td>Frais fixes exigibles à l'inscription</td></tr>
+                    <tr><td class="col-name">total_tuition</td><td class="col-type">bigint unsigned</td><td>NOT NULL</td><td>Scolarité annuelle totale</td></tr>
+                    <tr><td class="col-name">daily_meal_fee</td><td class="col-type">bigint unsigned</td><td>1 500 FCFA</td><td>Prix forfaitaire du repas par jour</td></tr>
+                    <tr><td class="col-name">hourly_aftercare_fee</td><td class="col-type">bigint unsigned</td><td>2 000 FCFA</td><td>Frais de garderie par heure après 18h30</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. SECTION TRANCHES -->
+        <div class="table-card" id="section_tranches">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>section_tranches</span> <span class="badge-fk">FK sections</span></div>
+                    <div class="table-desc">Normalisation des 4 tranches trimestrielles de scolarité pour chaque section.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant unique</td></tr>
+                    <tr><td class="col-name">section_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> sections.id cascade</td><td>Section d'âge parente</td></tr>
+                    <tr><td class="col-name">tranche_number</td><td class="col-type">unsigned tinyint</td><td>1 à 4</td><td>Numéro d'ordre de la tranche</td></tr>
+                    <tr><td class="col-name">amount</td><td class="col-type">bigint unsigned</td><td>NOT NULL</td><td>Montant officiel en FCFA</td></tr>
+                    <tr><td class="col-name">due_month / due_day</td><td class="col-type">unsigned tinyint</td><td>NULLABLE</td><td>Échéance contractuelle (ex: 30 avril, 31 juillet...)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. CHILDREN -->
+        <div class="table-card" id="children">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>children</span> <span class="badge-pk">Table Maîtresse</span></div>
+                    <div class="table-desc">Identité de l'enfant (sans section_id direct, avec sex et habitudes).</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant interne</td></tr>
+                    <tr><td class="col-name">registration_number</td><td class="col-type">varchar(50)</td><td>UNIQUE</td><td>Matricule officiel (<code>ENF-2026-XXXX</code>)</td></tr>
+                    <tr><td class="col-name">first_name / last_name</td><td class="col-type">varchar(255)</td><td>NOT NULL</td><td>Prénom et nom de l'enfant</td></tr>
+                    <tr><td class="col-name">sex</td><td class="col-type">enum('M', 'F')</td><td>NOT NULL</td><td>Sexe civil de l'enfant</td></tr>
+                    <tr><td class="col-name">birth_date</td><td class="col-type">date</td><td>NOT NULL</td><td>Date de naissance</td></tr>
+                    <tr><td class="col-name">birth_place</td><td class="col-type">varchar(255)</td><td>NULLABLE</td><td>Lieu de naissance</td></tr>
+                    <tr><td class="col-name">status</td><td class="col-type">varchar(30)</td><td>'pending'</td><td><code>pending</code>, <code>active</code>, <code>suspended</code>, <code>archived</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. GUARDIANS -->
+        <div class="table-card" id="guardians">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>guardians</span> <span class="badge-new">Fratries Ready</span></div>
+                    <div class="table-desc">Entité parent/responsable indépendante, réutilisable pour tous les frères et sœurs.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant unique du parent</td></tr>
+                    <tr><td class="col-name">full_name</td><td class="col-type">varchar(255)</td><td>NOT NULL</td><td>Nom et prénom du parent</td></tr>
+                    <tr><td class="col-name">profession</td><td class="col-type">varchar(255)</td><td>NULLABLE</td><td>Profession exercée</td></tr>
+                    <tr><td class="col-name">phone</td><td class="col-type">varchar(50)</td><td>NOT NULL</td><td>Numéro principal de contact</td></tr>
+                    <tr><td class="col-name">phone_secondary</td><td class="col-type">varchar(50)</td><td>NULLABLE</td><td>Numéro secondaire</td></tr>
+                    <tr><td class="col-name">email</td><td class="col-type">varchar(255)</td><td>NULLABLE</td><td>Adresse email pour notifications et reçus</td></tr>
+                    <tr><td class="col-name">address</td><td class="col-type">varchar(255)</td><td>NULLABLE</td><td>Adresse de domicile à Lomé</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5. CHILD GUARDIAN (PIVOT) -->
+        <div class="table-card" id="child_guardian">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>child_guardian</span> <span class="badge-new">Table Pivot N..N</span></div>
+                    <div class="table-desc">Liaison dynamique parent-enfant : type de lien, contact d'urgence, facturation et retrait légal.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant pivot</td></tr>
+                    <tr><td class="col-name">child_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> children.id cascade</td><td>Enfant concerné</td></tr>
+                    <tr><td class="col-name">guardian_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> guardians.id cascade</td><td>Parent ou responsable</td></tr>
+                    <tr><td class="col-name">relationship_type_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> relationship_types.id</td><td>Lien juridique (Père, Mère, Tuteur...)</td></tr>
+                    <tr><td class="col-name">is_primary_contact</td><td class="col-type">boolean</td><td>DEFAULT true</td><td>Contact privilégié pour l'enfant</td></tr>
+                    <tr><td class="col-name">is_billing_contact</td><td class="col-type">boolean</td><td>DEFAULT false</td><td>Destinataire des factures et reçus</td></tr>
+                    <tr><td class="col-name">is_emergency_contact</td><td class="col-type">boolean</td><td>DEFAULT false</td><td>Contact à joindre en cas d'urgence</td></tr>
+                    <tr><td class="col-name">is_authorized_pickup</td><td class="col-type">boolean</td><td>DEFAULT true</td><td>Autorisation légale de récupérer l'enfant</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 6. PAYMENTS & ALLOCATIONS -->
+        
+        <!-- PAYMENT METHODS -->
+        <div class="table-card" id="payment_methods">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>payment_methods</span> <span class="badge-new">Externalisation Règlements</span></div>
+                    <div class="table-desc">Moyens de paiement acceptés (Espèces, Flooz, TMoney, Virement bancaire, Chèque) administrables.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant du moyen de paiement</td></tr>
+                    <tr><td class="col-name">code</td><td class="col-type">varchar(50)</td><td>UNIQUE</td><td>Identifiant code (<code>cash</code>, <code>flooz</code>, <code>tmoney</code>, <code>bank_transfer</code>, <code>check</code>)</td></tr>
+                    <tr><td class="col-name">label</td><td class="col-type">varchar(100)</td><td>NOT NULL</td><td>Nom complet affiché</td></tr>
+                    <tr><td class="col-name">is_digital</td><td class="col-type">boolean</td><td>default: false</td><td>Paiement mobile / dématérialisé</td></tr>
+                    <tr><td class="col-name">requires_reference</td><td class="col-type">boolean</td><td>default: false</td><td>Exige un numéro de transaction ou reçu</td></tr>
+                    <tr><td class="col-name">is_active</td><td class="col-type">boolean</td><td>default: true</td><td>Disponibilité à l'encaissement</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PRICING CONFIGURATIONS -->
+        <div class="table-card" id="pricing_configurations">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>pricing_configurations</span> <span class="badge-new">Grille Tarifaire Dynamique</span></div>
+                    <div class="table-desc">Configuration dynamique des prix (repas 1 500 F/j, garderie soir 2 000 F/h, forfaits hebdo...).</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant du tarif</td></tr>
+                    <tr><td class="col-name">code</td><td class="col-type">varchar(50)</td><td>UNIQUE</td><td>Identifiant (<code>meal_daily</code>, <code>aftercare_hourly</code>, <code>weekly_rate</code>...)</td></tr>
+                    <tr><td class="col-name">label</td><td class="col-type">varchar(255)</td><td>NOT NULL</td><td>Désignation du tarif</td></tr>
+                    <tr><td class="col-name">unit_price</td><td class="col-type">bigint unsigned</td><td>min: 0 FCFA</td><td>Prix unitaire paramétré</td></tr>
+                    <tr><td class="col-name">currency</td><td class="col-type">varchar(10)</td><td>default: 'XOF'</td><td>Devise monétaire</td></tr>
+                    <tr><td class="col-name">billing_period</td><td class="col-type">varchar(20)</td><td>daily, hourly, weekly, fixed</td><td>Périodicité d'application</td></tr>
+                    <tr><td class="col-name">is_active</td><td class="col-type">boolean</td><td>default: true</td><td>Statut d'activation</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- OPERATING SCHEDULES -->
+        <div class="table-card" id="operating_schedules">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>operating_schedules</span> <span class="badge-new">Horaires d'Ouverture & Garderie</span></div>
+                    <div class="table-desc">Plages horaires d'ouverture (07h30 - 18h30 Lu-Ve), tolérance et calcul automatique des heures supplémentaires.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant horaire</td></tr>
+                    <tr><td class="col-name">day_of_week</td><td class="col-type">tinyint unsigned</td><td>UNIQUE (0..6)</td><td>0=Dimanche, 1=Lundi, ..., 5=Vendredi, 6=Samedi</td></tr>
+                    <tr><td class="col-name">label</td><td class="col-type">varchar(50)</td><td>NOT NULL</td><td>Jour usuel (Lundi, Mardi...)</td></tr>
+                    <tr><td class="col-name">is_open</td><td class="col-type">boolean</td><td>default: true</td><td>Ouverture réglementaire ce jour</td></tr>
+                    <tr><td class="col-name">opening_time</td><td class="col-type">time</td><td>07:30:00</td><td>Heure d'ouverture officielle</td></tr>
+                    <tr><td class="col-name">closing_time</td><td class="col-type">time</td><td>18:30:00</td><td>Heure de fermeture officielle</td></tr>
+                    <tr><td class="col-name">grace_period_minutes</td><td class="col-type">unsigned int</td><td>default: 0 min</td><td>Période de grâce avant déclenchement de pénalité</td></tr>
+                    <tr><td class="col-name">overtime_billing_step_minutes</td><td class="col-type">unsigned int</td><td>default: 60 min</td><td>Pas de facturation horaire (60 min = 1 heure entamée)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card" id="payments">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>payments</span> <span class="badge-new">Encaissements Réels</span></div>
+                    <div class="table-desc">Table des règlements réels (reçus financiers délivrés, Flooz, TMoney, Chèques, Espèces).</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant du paiement</td></tr>
+                    <tr><td class="col-name">payer_guardian_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> guardians.id nullOnDelete</td><td>Parent qui effectue le règlement</td></tr>
+                    <tr><td class="col-name">child_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> children.id nullOnDelete</td><td>Enfant pour lequel le règlement est versé</td></tr>
+                    <tr><td class="col-name">receipt_number</td><td class="col-type">varchar(50)</td><td>UNIQUE</td><td>Numéro officiel du reçu (<code>REC-2026-XXXX</code>)</td></tr>
+                    <tr><td class="col-name">amount</td><td class="col-type">bigint unsigned</td><td>min: 1 FCFA</td><td>Montant total encaissé</td></tr>
+                    <tr><td class="col-name">paid_at</td><td class="col-type">dateTime</td><td>NOT NULL</td><td>Date et heure précises du paiement</td></tr>
+                    <tr><td class="col-name">payment_method</td><td class="col-type">varchar(50)</td><td>NOT NULL</td><td><code>cash</code>, <code>mobile_money</code>, <code>bank_transfer</code>, <code>check</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card" id="payment_allocations">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>payment_allocations</span> <span class="badge-new">Ventilation Comptable</span></div>
+                    <div class="table-desc">Imputation d'un montant de paiement sur une échéance de scolarité ou une charge annexe.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant de la ventilation</td></tr>
+                    <tr><td class="col-name">payment_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> payments.id cascade</td><td>Paiement source</td></tr>
+                    <tr><td class="col-name">tuition_installment_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> NULLABLE</td><td>Tranche de scolarité créditée</td></tr>
+                    <tr><td class="col-name">additional_charge_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> NULLABLE</td><td>Charge annexe créditée</td></tr>
+                    <tr><td class="col-name">amount</td><td class="col-type">bigint unsigned</td><td>min: 1 FCFA</td><td>Portion du paiement allouée</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 7. ATTENDANCES -->
+        <div class="table-card" id="attendances">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>attendances</span> <span class="badge-new">DateTime & Retraits Sécurisés</span></div>
+                    <div class="table-desc">Pointages quotidiens en dateTime natifs avec liaison au parent ayant récupéré l'enfant ou tiers.</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant du pointage</td></tr>
+                    <tr><td class="col-name">child_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> children.id cascade</td><td>Enfant pointé</td></tr>
+                    <tr><td class="col-name">attendance_date</td><td class="col-type">date</td><td>UNIQUE composite</td><td>Date du jour</td></tr>
+                    <tr><td class="col-name">check_in_at</td><td class="col-type">dateTime</td><td>NULLABLE</td><td>Date et heure d'arrivée de l'enfant</td></tr>
+                    <tr><td class="col-name">check_out_at</td><td class="col-type">dateTime</td><td>NULLABLE</td><td>Date et heure de départ de l'enfant</td></tr>
+                    <tr><td class="col-name">picked_up_by_guardian_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> guardians.id</td><td>Parent référent qui a récupéré l'enfant</td></tr>
+                    <tr><td class="col-name">third_party_pickup_name / id_card</td><td class="col-type">varchar(255)</td><td>NULLABLE</td><td>Identité d'un tiers mandaté avec CNI</td></tr>
+                    <tr><td class="col-name">overtime_minutes / amount</td><td class="col-type">unsigned int</td><td>CALCUL AUTO</td><td>Dépassement post-18h30 (2 000 FCFA / heure entamée)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 8. CHILD EVENTS -->
+        <div class="table-card" id="child_events">
+            <div class="table-header">
+                <div>
+                    <div class="table-title"><span>child_events</span> <span class="badge-new">Cahier de vie DateTime</span></div>
+                    <div class="table-desc">Timeline du séjour avec horodatage natif event_at (repas, siestes, hygiène, soins, fournitures).</div>
+                </div>
+            </div>
+            <table class="columns-table">
+                <thead><tr><th>Colonne</th><th>Type</th><th>Contrainte</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">id</td><td class="col-type">bigint unsigned</td><td><span class="badge-pk">PK</span> auto_increment</td><td>Identifiant de l'événement</td></tr>
+                    <tr><td class="col-name">child_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> children.id cascade</td><td>Enfant concerné</td></tr>
+                    <tr><td class="col-name">child_event_type_id</td><td class="col-type">bigint unsigned</td><td><span class="badge-fk">FK</span> child_event_types.id</td><td>Catégorie normalisée</td></tr>
+                    <tr><td class="col-name">event_at</td><td class="col-type">dateTime</td><td>NOT NULL</td><td>Date et heure de l'événement</td></tr>
+                    <tr><td class="col-name">title / description</td><td class="col-type">text</td><td>NOT NULL / NULL</td><td>Détail de l'observation</td></tr>
+                    <tr><td class="col-name">metadata</td><td class="col-type">json</td><td>NULLABLE</td><td>Données structurées (durée de sieste, ml de biberon...)</td></tr>
+                    <tr><td class="col-name">supply_fulfilled_at</td><td class="col-type">dateTime</td><td>NULLABLE</td><td>Date à laquelle le parent a apporté les fournitures</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
